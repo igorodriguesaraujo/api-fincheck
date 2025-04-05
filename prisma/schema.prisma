@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  bankAccounts BankAccount[]
+  category     Category[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+enum AccountType {
+  CHECKING
+  INVESTIMENT
+  CASH
+
+  @@map("account_type")
+}
+
+model BankAccount {
+  id             String      @id @default(uuid())
+  name           String
+  userId         String      @map("user_id")
+  initialBalance Float       @map("initial_balance")
+  type           AccountType @default(CHECKING)
+  color          String
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("bank_accounts")
+}
+
+enum CategoryType {
+  EXPENSE
+  INCOME
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String
+  type         CategoryType  @default(INCOME)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String        @map("user_id")
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+}
+
+model Transaction {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bankAccountId String      @map("bank_account_id")
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+
+  categoryId String?   @map("category_id")
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  name  String
+  value Float
+  date  DateTime
+  type  TransactionType @default(INCOME)
+
+  @@map("transactions")
+}
