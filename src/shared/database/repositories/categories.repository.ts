@@ -4,14 +4,10 @@ import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class UserRepository {
+export class CategoriesRepository {
   constructor(private readonly prismaService: PrismaService) { }
 
-  create(createDto: Prisma.UserCreateArgs) {
-    return this.prismaService.user.create(createDto);
-  }
-
-  findUnique(findUniqueDto: Prisma.UserFindUniqueArgs) {
-    return this.prismaService.user.findUnique(findUniqueDto);
+  findMany(findManyDto: Prisma.CategoryFindManyArgs) {
+    return this.prismaService.category.findMany(findManyDto);
   }
 }
