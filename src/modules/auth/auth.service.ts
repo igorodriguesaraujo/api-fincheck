@@ -1,27 +1,28 @@
 /* eslint-disable prettier/prettier */
-import { SignupDto } from './dto/signup.dto';
-import { compare, hash } from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
 import {
   ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { compare, hash } from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 
+import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
-import { UserRepository } from 'src/shared/database/repositories/users.repository';
+
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userRepo: UserRepository,
+    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
   ) { }
 
   async signin(SigninDto: SigninDto) {
     const { email, password } = SigninDto;
 
-    const user = await this.userRepo.findUnique({
+    const user = await this.usersService.findByUnique({
       where: { email },
     });
 
@@ -41,7 +42,7 @@ export class AuthService {
   async signup(SignupDto: SignupDto) {
     const { email, name, password } = SignupDto;
 
-    const existEmail = await this.userRepo.findUnique({
+    const existEmail = await this.usersService.findByUnique({
       where: { email },
       select: { id: true },
     });
@@ -52,7 +53,7 @@ export class AuthService {
 
     const hashPassword = await hash(password, 12);
 
-    const user = await this.userRepo.create({
+    const user = await this.usersService.create({
       data: {
         email,
         name,
@@ -81,6 +82,19 @@ export class AuthService {
     });
 
     return this.generateToken(user.id);
+  }
+
+  async me(userId: string) {
+    const user = await this.usersService.findByUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    })
+
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    return user;
   }
 
   private async generateToken(userId: string) {
