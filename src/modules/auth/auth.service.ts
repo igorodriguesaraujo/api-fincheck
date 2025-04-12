@@ -86,8 +86,14 @@ export class AuthService {
 
   async me(userId: string) {
     const user = await this.usersService.findByUnique({
-      where: { id: userId },
-      select: { name: true, email: true },
+      where: {
+        id: userId
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true
+      },
     })
 
     if (!user) {
