@@ -8,14 +8,7 @@ export class CategoriesService {
 
   findAllByUser(userId: string) {
     return this.categoriesRepository.findMany({
-      where: {
-        userId
-      },
-      select: {
-        name: true,
-        icon: true,
-        type: true
-      }
+      where: { userId }
     });
   }
 }
