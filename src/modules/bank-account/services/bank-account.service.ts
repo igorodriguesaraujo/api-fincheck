@@ -68,6 +68,7 @@ export class BankAccountService {
     return await this.bankAccountRepository.update({
       where: {
         id: bankAccountId,
+        userId
       },
       data: {
         name,
